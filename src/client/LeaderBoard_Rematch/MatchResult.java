@@ -17,9 +17,10 @@ public class MatchResult extends JPanel {
     private Client client;
     public static String player1Name;
     public static String player2Name;
-
-    public MatchResult(String player1Name, String player2Name, int player1Score, int player2Score, Client client, String surrenderResult, Boolean isSurrendered) {
+    private JFrame frame; // Store a JFrame reference
+    public MatchResult(String player1Name, String player2Name, int player1Score, int player2Score, Client client, String surrenderResult, Boolean isSurrendered, JFrame frame) {
         this.client = client;
+        this.frame = frame;
         this.player1Name = player1Name;
         this.player2Name = player2Name;
         client.setMatchResult(this);
@@ -164,13 +165,19 @@ public class MatchResult extends JPanel {
         client.handleLoginSuccess();
     }
 public void closeMatchResult(){
-    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-    Container container = frame.getContentPane();
-    container.removeAll();
-    container.setLayout(new CardLayout());
-    container.revalidate();
-    container.repaint();
-    frame.dispose();
+//    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+//    Container container = frame.getContentPane();
+//    container.removeAll();
+//    container.setLayout(new CardLayout());
+//    container.revalidate();
+//    container.repaint();
+//    frame.dispose();
+    if (frame != null) {
+        frame.getContentPane().removeAll();
+        frame.revalidate();
+        frame.repaint();
+        frame.dispose();
+    }
 }
     public void createAndShowUI() {
         JFrame frame = new JFrame("Match Result");

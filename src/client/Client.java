@@ -5,6 +5,7 @@ import client.loginGUI.src.main.Main;
 import  client.LeaderBoard_Rematch.MatchResult;
 import database.PlayerDAO;
 
+import java.awt.*;
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
@@ -23,6 +24,7 @@ private  String username;
     private HomeScreen homeScreen; // Reference to HomeScreen
     private GameUI gameUI;
 private  MatchResult matchResult;
+    private  JFrame frame = new JFrame("Match Result");
     public Client(String serverAddress, int port) {
         try {
             socket = new Socket(serverAddress, port);
@@ -69,7 +71,7 @@ private  MatchResult matchResult;
         }
     }
     private void handleOpponentSur(String message){
-        if(gameUI!=null)        gameUI.endGame(message,true);
+        if(gameUI!=null)  gameUI.endGame(message,true);
     }
     private void handleMatch(String message) {
         // Split the message to get currentPlayer and opponentPlayer usernames
@@ -95,6 +97,19 @@ if(matchResult!=null) {
 
         }
     }
+    public void showMatchResult(String player1Name, String player2Name, int player1Score, int player2Score, String surrenderResult, boolean isSurrendered) {
+        // Create an instance of MatchResult with the required information
+        matchResult = new MatchResult(player1Name, player2Name, player1Score, player2Score, this, surrenderResult, isSurrendered,frame);
+        frame.add(matchResult);
+        frame.setPreferredSize(new Dimension(900, 600));
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+//
+        frame.setVisible(true);
+        // Display the MatchResult UI
+//        matchResult.createAndShowUI();
+    }
+
     public void sendScore(int score,String player,String opponent) {
         System.out.println("SENDSCORE:" + String.valueOf(score)+":"+player+":"+opponent);
         output.println("SENDSCORE:" + String.valueOf(score)+":"+player+":"+opponent);
@@ -110,6 +125,9 @@ if(matchResult!=null) {
     }
     public void sendRematch(String opponent) {
         output.println("REMATCH:" + opponent);
+    }
+    public void sendRemove(String player) {
+        output.println("REMOVE:" + player);
     }
     public void accept(String username) {
         output.println("ACCEPT:" + username);

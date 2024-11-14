@@ -163,27 +163,37 @@ private  Client client;
         countdownTimer.start();
     }
     public void endGame(String surrenderResult,boolean isSurrendered) {
-        // Remove the current game interface and display the match result screen
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        frame.getContentPane().removeAll();
-if(isSurrendered) client.sendSurrender(surrenderResult);
-        // Create and add the MatchResult screen
-        frame.add(new MatchResult(currentPlayer, opponentPlayer, playerScore, opponentScore, client,surrenderResult,isSurrendered));
+        // Stop all timers to prevent background tasks from running
+        if (countdownTimer != null) countdownTimer.stop();
+        if (gameTimer != null) gameTimer.stop();
 
-        // Revalidate and repaint the frame to reflect changes
-        frame.revalidate();
-        frame.repaint();
-        client.sendMatchInfo(currentPlayer+','+opponentPlayer+','+playerScore+','+opponentScore);
-    }
-    public void updateScore1(boolean correct) {
-        if (correct) {
-            ++playerScore;
-        } else {
-            --playerScore;
+        try {
+            // Attempt to retrieve the JFrame containing this component
+            Window window = SwingUtilities.getWindowAncestor(this);
+
+            if (window instanceof JFrame frame) { // Check if the window is a JFrame
+                // Send necessary information to the server
+                if (isSurrendered) client.sendSurrender(surrenderResult);
+                client.sendRemove(currentPlayer);
+                client.sendMatchInfo(currentPlayer + ',' + opponentPlayer + ',' + playerScore + ',' + opponentScore);
+
+                SwingUtilities.invokeLater(() -> {
+                    // Ensure GameUI components are removed before disposing
+                    frame.getContentPane().removeAll();
+                    frame.revalidate();
+                    frame.repaint();
+                    frame.dispose();
+       client.showMatchResult(currentPlayer, opponentPlayer, playerScore, opponentScore, surrenderResult, isSurrendered);
+//
+                });
+            } else {
+                System.err.println("Could not find a JFrame ancestor for this component.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        client.sendScore(playerScore,this.currentPlayer,this.opponentPlayer);
-        playerScoreLabel.setText(currentPlayer + ": " + playerScore);
     }
+
     public void updateScore(boolean correct) {
         if (correct) {
             ++playerScore;
@@ -199,24 +209,6 @@ if(isSurrendered) client.sendSurrender(surrenderResult);
         new Timer(1500, e -> playerScoreLabel.setForeground(Color.WHITE)).start();
     }
 
-
-    //     Hàm di chuyển thùng rác và thay đổi thứ tự
-    public void moveBin1(int direction) {
-        // Di chuyển sang trái hoặc phải
-        bins[currentBinIndex].reset(); // Trở lại màu mặc định
-
-        if (direction == -1) { // Sang trái
-            currentBinIndex = (currentBinIndex - 1 + bins.length) % bins.length;
-        } else if (direction == 1) { // Sang phải
-            currentBinIndex = (currentBinIndex + 1) % bins.length;
-        }
-
-        // Đặt thùng hiện tại về giữa
-        for (int i = 0; i < bins.length; i++) {
-            bins[i].setBounds((i - currentBinIndex + 2) * 150 + 100, 500, 100, 100);
-        }
-        bins[currentBinIndex].rotate(); // Đánh dấu thùng rác mới được chọn
-    }
     // Phần moveBin đã được chỉnh sửa
     public void moveBin(int direction) {
         // Hoán đổi thứ tự thùng rác
@@ -253,13 +245,6 @@ if(isSurrendered) client.sendSurrender(surrenderResult);
         bins[1].rotate(); // Đánh dấu thùng rác mới được chọn
     }
 
-
-    public void updateOpponentScore1(String score) {
-        this.opponentScore =Integer.parseInt(score); // Cập nhật điểm đối thủ
-        SwingUtilities.invokeLater(() -> {
-            opponentScoreLabel.setText(opponentPlayer + ": " + this.opponentScore);
-        });
-    }
     public void updateOpponentScore(String score) {
         this.opponentScore = Integer.parseInt(score); // Cập nhật điểm đối thủ
         SwingUtilities.invokeLater(() -> {

@@ -87,6 +87,9 @@ public class Server {
                     else if (message.startsWith("SURRENDER")) {
                         handleSurrender(message);
                     }
+                    else if (message.startsWith("REMOVE")) {
+                        handleRemove(message);
+                    }
 
                 }
             } catch (IOException e) {
@@ -124,6 +127,29 @@ public class Server {
                 receiverClient.output.println("SCORE:" + score);
             } else {
                 System.out.println("Receiver " + receiverUsername + " not found or is offline.");
+            }
+        }
+        private void handleRemove(String message) {
+            // Split the message to extract the username
+            String[] parts = message.split(":");
+            if (parts.length == 2) {
+                String usernameToRemove = parts[1];
+
+                // Check if the username exists in the acceptedPlayers list
+                if (acceptedPlayers.contains(usernameToRemove)) {
+                    // Remove the player from the acceptedPlayers list
+                    acceptedPlayers.remove(usernameToRemove);
+                    System.out.println("Removed player: " + usernameToRemove + " from acceptedPlayers list.");
+
+                    // Send confirmation to the client
+                    output.println("Player " + usernameToRemove + " removed successfully.");
+                } else {
+                    // Inform the client that the player was not found
+                    output.println("Player " + usernameToRemove + " not found in acceptedPlayers list.");
+                }
+            } else {
+                // Inform the client that the format is incorrect
+                output.println("Invalid format for REMOVE command.");
             }
         }
 
